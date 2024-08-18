@@ -14,7 +14,7 @@ pub struct Square {
 pub fn detect_squares(width: u32, height: u32, contours: &Vec<Contour<i32>>) -> Vec<Square> {
   let mut results = vec![];
 
-  'outer: for (index, contour) in contours.iter().enumerate() {
+  'outer: for (_index, contour) in contours.iter().enumerate() {
     let points = &contour.points;
 
     if points.len() < 150 {
@@ -30,13 +30,13 @@ pub fn detect_squares(width: u32, height: u32, contours: &Vec<Contour<i32>>) -> 
     }
 
     let mut x_counts =
-      x_count_by_index.iter()
+      x_count_by_index.into_iter()
         .enumerate()
         .collect::<Vec<_>>();
     x_counts.sort_by(|(_, a), (_, b)| if a > b { Ordering::Less } else { Ordering::Greater });
 
     let mut y_counts =
-      y_count_by_index.iter()
+      y_count_by_index.into_iter()
         .enumerate()
         .collect::<Vec<_>>();
     y_counts.sort_by(|(_, a), (_, b)| if a > b { Ordering::Less } else { Ordering::Greater });
@@ -45,8 +45,8 @@ pub fn detect_squares(width: u32, height: u32, contours: &Vec<Contour<i32>>) -> 
       continue
     }
 
-    if ratio(x_counts[1].0 as f64, x_counts[2].0 as f64) > 0.5
-    || ratio(y_counts[1].0 as f64, y_counts[2].0 as f64) > 0.5 {
+    if ratio(x_counts[1].1 as f64, x_counts[2].1 as f64) > 0.35
+    || ratio(y_counts[1].1 as f64, y_counts[2].1 as f64) > 0.35 {
       continue;
     }
 
@@ -59,14 +59,6 @@ pub fn detect_squares(width: u32, height: u32, contours: &Vec<Contour<i32>>) -> 
     let bottom = Line::new(Point::new(x_left,  y_bottom), Point::new(x_right, y_bottom));
     let left   = Line::new(Point::new(x_left,  y_top),    Point::new(x_left,  y_bottom));
     let right  = Line::new(Point::new(x_right, y_top),    Point::new(x_right, y_bottom));
-
-    let tolerance = 0.02;
-    if   line_length_ratio(top, bottom) > tolerance
-      || line_length_ratio(top, left)   > tolerance
-      || line_length_ratio(top, right)  > tolerance
-    {
-      continue;
-    }
 
     for point in points.iter() {
       let p = Point::new(point.x as f64, point.y as f64);
@@ -85,6 +77,14 @@ pub fn detect_squares(width: u32, height: u32, contours: &Vec<Contour<i32>>) -> 
       }
     }
 
+    let min_ratio = 0.98;
+    if   line_length_ratio(top, bottom) < min_ratio
+      || line_length_ratio(top, left)   < min_ratio
+      || line_length_ratio(top, right)  < min_ratio
+    {
+      continue;
+    }
+
     results.push(Square {
       points: [
         Point::new(x_left, y_top),
@@ -96,6 +96,8 @@ pub fn detect_squares(width: u32, height: u32, contours: &Vec<Contour<i32>>) -> 
     });
   }
 
+  results.sort_by(|a, b| if a.points[0].y() < b.points[0].y() { Ordering::Less } else { Ordering::Greater });
+
   return results;
 }
 
@@ -104,6 +106,6 @@ fn line_length_ratio(a: Line, b: Line) -> f64 {
 }
 
 fn ratio(a: f64, b: f64) -> f64 {
-  let r = f64::abs(a - b) / f64::max(a, b);
+  let r = f64::min(a, b) / f64::max(a, b);
   return r;
 }

@@ -2,6 +2,7 @@ use eframe::egui;
 use egui::{Image, ColorImage, Layout, TextureHandle};
 use xcap::Window;
 use image::DynamicImage;
+use image::GenericImageView;
 
 mod contour;
 use contour::detect_squares;
@@ -25,7 +26,13 @@ fn main() -> eframe::Result {
 struct EnforcerApp {
   capture_index: i64,
   captures: Option<Vec<WindowScreenshot>>,
-  region_select_image: Option<TextureHandle>,
+  region_select_state: Option<RegionSelectState>,
+}
+
+struct RegionSelectState {
+  display_texture: TextureHandle,
+  region_images: Vec<image::RgbaImage>,
+  region_textures: Vec<TextureHandle>,
 }
 
 impl Default for EnforcerApp {
@@ -33,7 +40,7 @@ impl Default for EnforcerApp {
         EnforcerApp {
             capture_index: -1,
             captures: None,
-            region_select_image: None,
+            region_select_state: None,
         }
     }
 }
@@ -95,11 +102,12 @@ impl EnforcerApp {
     let capture_index = self.capture_index as usize;
     let capture = captures.get_mut(capture_index).unwrap();
 
-    let contour_texture = self.region_select_image.get_or_insert_with(|| {
+    let state = self.region_select_state.get_or_insert_with(|| {
       let source_image = &capture.data;
 
       let processing = source_image;
       let processing = image::imageops::colorops::grayscale(processing);
+      let grayscale_image = processing.clone();
       let processing = {
         let n = 75;
         imageproc::contrast::stretch_contrast(&processing, n, n + 1, 0, 255)
@@ -115,18 +123,13 @@ impl EnforcerApp {
         &contours
       );
 
+      let mut image = DynamicImage::ImageLuma8(grayscale_image).to_rgba8();
       // let mut image = DynamicImage::ImageLuma8(processed_image).to_rgba8();
-      let mut image = source_image.clone();
+      // let mut image = source_image.clone();
 
-      for contour in contours.iter() {
-        for point in &contour.points {
-          image.put_pixel(
-            point.x as u32,
-            point.y as u32,
-            image::Rgba([255, 255, 0, 255])
-          );
-        }
-      }
+      let mut region_images = vec![];
+      let mut region_textures = vec![];
+
       for square in squares.iter() {
         for point in &square.contour.points {
           image.put_pixel(
@@ -135,18 +138,33 @@ impl EnforcerApp {
             image::Rgba([255, 0, 0, 255])
           );
         }
+
+        let region_image = source_image.view(
+          square.points[0].x() as u32,
+          square.points[0].y() as u32,
+          square.points[2].x() as u32 - square.points[0].x() as u32,
+          square.points[2].y() as u32 - square.points[0].y() as u32,
+        ).to_image();
+
+        region_images.push(region_image.clone());
+        region_textures.push(ctx.load_texture(
+          format!("{}-contoured", capture.title.clone()),
+          image_to_egui(region_image),
+          Default::default(),
+        ));
       }
 
-      let color_image = ColorImage::from_rgba_unmultiplied(
-        [image.width() as usize, image.height() as usize],
-        image.as_raw()
+      let display_texture = ctx.load_texture(
+        format!("{}-contoured", capture.title.clone()),
+        image_to_egui(image),
+        Default::default(),
       );
 
-      ctx.load_texture(
-        format!("{}-contoured", capture.title.clone()),
-        color_image,
-        Default::default(),
-      )
+      RegionSelectState {
+        display_texture,
+        region_images,
+        region_textures,
+      }
     });
 
     egui::CentralPanel::default().show(ctx, |ui| {
@@ -155,8 +173,11 @@ impl EnforcerApp {
         ui.with_layout(Layout::left_to_right(egui::Align::TOP), |ui| {
           ui.vertical(|ui| {
             ui.add(
-              Image::from_texture((contour_texture.id(), contour_texture.size_vec2()))
-                // .max_height(600.0)
+              Image::from_texture((
+                  state.display_texture.id(),
+                  state.display_texture.size_vec2()
+              ))
+                .max_height(600.0)
             );
           });
         });
@@ -195,4 +216,11 @@ fn take_screenshot() -> Vec<WindowScreenshot> {
   }
 
   return results;
+}
+
+fn image_to_egui(image: image::RgbaImage) -> egui::ColorImage {
+  ColorImage::from_rgba_unmultiplied(
+    [image.width() as usize, image.height() as usize],
+    image.as_raw()
+  )
 }
