@@ -4,11 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+directories = "5.0.1"
 eframe = "0.28.1"
 egui = "0.28.1"
 egui_extras = { version = "0.28.1", features = ["all_loaders"] }
+find-subimage = "0.1.12"
 geo = "0.28.0"
 image = "0.25.2"
 imageproc = "0.25.0"
 rodio = "0.19.0"
+serde = "1.0.208"
+serde_json = "1.0.125"
 xcap = "0.0.11"
