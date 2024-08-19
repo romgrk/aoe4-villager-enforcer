@@ -74,6 +74,7 @@ impl Default for EnforcerApp {
 
 impl eframe::App for EnforcerApp {
   fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+    println!("app::update");
     match self.get(|s| s.interface) {
       Interface::WindowSelect => {
         self.ui_window_select(ctx, frame);
@@ -93,11 +94,6 @@ impl EnforcerApp {
     let state = self.state.read();
     let value = callback(&state);
     return value;
-  }
-
-  fn update(&self, callback: impl Fn(&mut State)) {
-    let mut state = self.state.write();
-    callback(&mut state);
   }
 
   fn ui_window_select(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
@@ -159,7 +155,9 @@ impl EnforcerApp {
   }
 
   fn ui_region_select(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    println!("ui_region_select");
     let mut state = self.state.write();
+    println!("{:?}", state.config);
 
     if state.config.data.is_some() {
       state.interface = Interface::Main;
@@ -246,55 +244,54 @@ impl EnforcerApp {
       ui.vertical(|ui| {
         ui.heading("Select villager image");
 
-        egui::ScrollArea::both().show(ui, |ui| {
-          ui.with_layout(Layout::left_to_right(egui::Align::TOP), |ui| {
-            ui.vertical(|ui| {
-              ui.horizontal(|ui| {
-                region_state.region_textures.iter().enumerate().for_each(|(index, texture)| {
-                  ui.vertical(|ui| {
+        ui.with_layout(Layout::left_to_right(egui::Align::TOP), |ui| {
+          ui.vertical(|ui| {
+            ui.horizontal(|ui| {
+              region_state.region_textures.iter().enumerate().for_each(|(index, texture)| {
+                ui.vertical(|ui| {
+                  let button = egui::Button::image_and_text(
+                    Image::from_texture((texture.id(), texture.size_vec2()))
+                      .max_height(80.0),
+                    "Select",
+                  );
 
-                    let button = egui::Button::image_and_text(
-                      Image::from_texture((texture.id(), texture.size_vec2()))
-                        .max_height(80.0),
-                      "Select",
+                  if ui.add(button).clicked() {
+
+                    // Select half the image
+                    let image = &region_state.region_images[index];
+                    let image = image.view(
+                      image.width() / 2,
+                      10,
+                      image.width() / 2,
+                      image.height() / 2,
                     );
+                    let image = image.to_image();
+                    let image = DynamicImage::ImageRgba8(image).to_luma8();
 
-                    if ui.add(button).clicked() {
+                    state.config.data = Some(image);
+                    state.config.y_max = region_state.region_squares[index].points[3].y() as u32 + 20;
 
-                      // Select half the image
-                      let image = &region_state.region_images[index];
-                      let image = image.view(
-                        image.width() / 2,
-                        10,
-                        image.width() / 2,
-                        image.height() / 2,
-                      );
-                      let image = image.to_image();
-                      let image = DynamicImage::ImageRgba8(image).to_luma8();
+                    // XXX: show error message?
+                    let _ = config::write(&state.config);
 
-                      state.config.data = Some(image);
-                      state.config.y_max = region_state.region_squares[index].points[3].y() as u32 + 20;
+                    println!("Config: {:?}", state.config);
 
-                      // XXX: show error message?
-                      let _ = config::write(&state.config);
-
-                      println!("Config: {:?}", state.config);
-
-                      state.interface = Interface::Main;
-                    }
-                  });
+                    state.interface = Interface::Main;
+                  }
                 });
               });
-
-              ui.add(
-                Image::from_texture((
-                  region_state.display_texture.id(),
-                  region_state.display_texture.size_vec2()
-                ))
-                  .max_height(600.0)
-              );
             });
           });
+        });
+
+        egui::ScrollArea::both().show(ui, |ui| {
+          ui.add(
+            Image::from_texture((
+              region_state.display_texture.id(),
+              region_state.display_texture.size_vec2()
+            ))
+              .max_height(600.0)
+          );
         });
       });
     });

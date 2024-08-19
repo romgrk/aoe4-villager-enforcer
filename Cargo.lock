@@ -217,6 +217,7 @@ dependencies = [
  "geo",
  "image",
  "imageproc",
+ "parking_lot",
  "serde",
  "serde_json",
  "tinyaudio",

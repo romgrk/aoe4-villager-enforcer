@@ -46,12 +46,14 @@ impl Watcher {
 
     println!("check: capture");
     let capture = capture::take_one(state.window_capture.as_ref().unwrap().window.id());
-    state.window_capture = capture.clone();
+    println!("check: capture: {:?}", capture.is_some());
     if capture.is_none() {
+      state.window_capture = None;
       state.interface = Interface::WindowSelect;
       return;
     }
     println!("check: captured");
+    println!("check: {}", state.is_watching);
 
     if state.is_watching == false {
       return;
@@ -76,7 +78,7 @@ impl Watcher {
     // find_subimage_positions() is a long operation
     drop(state);
 
-    println!("check: done");
+    println!("check: did_run");
 
     // These are (x, y, distance) where x and y are the position within the larger image
     // and distance is the distance value, where a smaller distance means a more precise match

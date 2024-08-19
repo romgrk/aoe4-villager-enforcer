@@ -4,7 +4,7 @@ use egui::TextureHandle;
 use crate::config::Config;
 use crate::capture::Capture;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Interface {
   WindowSelect,
   RegionSelect,

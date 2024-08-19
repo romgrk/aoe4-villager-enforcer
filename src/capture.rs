@@ -36,7 +36,9 @@ pub fn take_all() -> Vec<Capture> {
 }
 
 pub fn take_one(window_id: u32) -> Option<Capture> {
+  println!("take_one: start");
   let windows = Window::all().unwrap();
+  println!("take_one: windows");
 
   for window in windows {
     println!(
