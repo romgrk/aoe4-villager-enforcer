@@ -6,9 +6,9 @@ mod sound;
 mod watcher;
 
 use std::sync::Arc;
-use std::sync::RwLock;
 use std::time::Instant;
 use std::time::Duration;
+use parking_lot::RwLock;
 use eframe::egui;
 use egui::{Image, ColorImage, Layout, TextureHandle};
 use image::DynamicImage;
@@ -90,18 +90,18 @@ impl eframe::App for EnforcerApp {
 
 impl EnforcerApp {
   fn get<T>(&self, callback: fn(&State) -> T) -> T {
-    let state = self.state.read().unwrap();
+    let state = self.state.read();
     let value = callback(&state);
     return value;
   }
 
   fn update(&self, callback: impl Fn(&mut State)) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.write();
     callback(&mut state);
   }
 
   fn ui_window_select(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.write();
 
     if state.captures.is_none() || Instant::now().duration_since(state.last_capture) > Duration::from_secs(1) {
       state.captures = Some(capture::take_all());
@@ -159,7 +159,7 @@ impl EnforcerApp {
   }
 
   fn ui_region_select(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.write();
 
     if state.config.data.is_some() {
       state.interface = Interface::Main;
@@ -175,10 +175,7 @@ impl EnforcerApp {
       let processing = source_image;
       let processing = image::imageops::colorops::grayscale(processing);
       let grayscale_image = processing.clone();
-      let processing = {
-        let n = 120;
-        imageproc::contrast::stretch_contrast(&processing, n, n + 1, 0, 255)
-      };
+      let processing = imageproc::contrast::stretch_contrast(&processing, 75, 90, 0, 255);
 
       let processed_image = processing;
 
@@ -197,6 +194,15 @@ impl EnforcerApp {
       let mut region_images = vec![];
       let mut region_textures = vec![];
 
+      for c in contours {
+        for point in &c.points {
+          image.put_pixel(
+            point.x as u32,
+            point.y as u32,
+            image::Rgba([5, 255, 0, 255])
+          );
+        }
+      }
       for (i, square) in squares.iter().enumerate() {
         for point in &square.contour.points {
           image.put_pixel(
@@ -295,7 +301,7 @@ impl EnforcerApp {
   }
 
   fn ui_main(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.write();
 
     let capture = state.window_capture.as_mut().unwrap();
     let capture_texture = capture.texture.get_or_insert_with(|| {

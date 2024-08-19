@@ -1,6 +1,6 @@
 use std::time::Duration;
 use std::sync::Arc;
-use std::sync::RwLock;
+use parking_lot::RwLock;
 use image::DynamicImage;
 use image::GenericImageView;
 use find_subimage::SubImageFinderState;
@@ -37,18 +37,21 @@ impl Watcher {
   }
   
   fn check(&mut self) {
-    let mut state = self.state.write().unwrap();
+    println!("check: lock");
+    let mut state = self.state.write();
 
     if state.window_capture.is_none() {
       return;
     }
 
+    println!("check: capture");
     let capture = capture::take_one(state.window_capture.as_ref().unwrap().window.id());
     state.window_capture = capture.clone();
     if capture.is_none() {
       state.interface = Interface::WindowSelect;
       return;
     }
+    println!("check: captured");
 
     if state.is_watching == false {
       return;
@@ -68,10 +71,12 @@ impl Watcher {
 
     let mut finder = SubImageFinderState::new();
 
-    println!("RUNNING FIND");
+    println!("check: find");
 
     // find_subimage_positions() is a long operation
     drop(state);
+
+    println!("check: done");
 
     // These are (x, y, distance) where x and y are the position within the larger image
     // and distance is the distance value, where a smaller distance means a more precise match
@@ -90,12 +95,13 @@ impl Watcher {
     println!("FOUND: {:?}", &position);
     println!("POSITIONS: {:?}", positions);
 
-    let mut state = self.state.write().unwrap();
+    let mut state = self.state.write();
 
     state.window_capture = Some(capture);
     state.is_queued = position.is_some();
 
     if state.is_queued == false {
+      println!("check: play_tone");
       sound::play_tone(NOTE, Duration::from_millis(500));
     }
   }
