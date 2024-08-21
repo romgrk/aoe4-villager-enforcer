@@ -38,15 +38,19 @@ impl Watcher {
   
   fn check(&mut self) {
     println!("check: lock");
-    let mut state = self.state.write();
-
+    let state = self.state.read();
     if state.window_capture.is_none() {
       return;
     }
+    let window_id = state.window_capture.as_ref().unwrap().window.id();
+    drop(state);
 
     println!("check: capture");
-    let capture = capture::take_one(state.window_capture.as_ref().unwrap().window.id());
+    let capture = capture::take_one(window_id);
     println!("check: capture: {:?}", capture.is_some());
+
+    let mut state = self.state.write();
+
     if capture.is_none() {
       state.window_capture = None;
       state.interface = Interface::WindowSelect;

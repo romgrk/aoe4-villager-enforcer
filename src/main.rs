@@ -19,6 +19,8 @@ use state::State;
 use state::Interface;
 use watcher::Watcher;
 
+const TITLE: &str = "AOE4 Villager Enforcer";
+
 fn main() -> eframe::Result {
   let options = eframe::NativeOptions {
     viewport: egui::ViewportBuilder::default().with_inner_size([1200.0, 800.0]),
@@ -26,7 +28,7 @@ fn main() -> eframe::Result {
   };
 
   eframe::run_native(
-    "AOE4 Villager Enforcer",
+    TITLE,
     options,
     Box::new(|cc| {
       egui_extras::install_image_loaders(&cc.egui_ctx);
@@ -119,8 +121,6 @@ impl EnforcerApp {
 
         egui::ScrollArea::both().show(ui, |ui| {
           ui.with_layout(Layout::left_to_right(egui::Align::TOP), |ui| {
-            let mut index = 0;
-
             state.captures.as_mut().unwrap().iter_mut().for_each(|capture| {
               capture.texture.get_or_insert_with(|| {
                 ui.ctx().load_texture(
@@ -132,21 +132,22 @@ impl EnforcerApp {
             });
 
             state.captures.as_ref().unwrap().clone().iter().for_each(|capture| {
-              ui.vertical(|ui| {
-                let texture = capture.texture.as_ref().unwrap();
+              if capture.window.title() == TITLE {
+                return;
+              }
 
-                let button = egui::Button::image_and_text(
-                  Image::from_texture((texture.id(), texture.size_vec2()))
-                    .max_height(200.0),
-                  capture.window.title(),
-                );
+              let texture = capture.texture.as_ref().unwrap();
 
-                if ui.add(button).clicked() {
-                  state.window_capture = Some(capture.clone());
-                  state.interface = Interface::RegionSelect;
-                }
-              });
-              index += 1;
+              let button = egui::Button::image_and_text(
+                Image::from_texture((texture.id(), texture.size_vec2()))
+                  .max_height(200.0),
+                "",
+              );
+
+              if ui.add(button).clicked() {
+                state.window_capture = Some(capture.clone());
+                state.interface = Interface::RegionSelect;
+              }
             });
           });
         });
