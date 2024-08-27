@@ -12,7 +12,7 @@ It works by scanning the screen for a villager image at a certain height. Becaus
 > production and you'll end up only relying on the tone. If you want to avoid training yourself
 > to be a cheater, it needs to hurt. Put the volume at 100%.
 
-### Getting started
+### Usage
 
 1. Download from: https://github.com/romgrk/aoe4-villager-enforcer/releases
 2. Start AOE4
@@ -20,6 +20,7 @@ It works by scanning the screen for a villager image at a certain height. Becaus
 4. Open the program now. Not before, now. You should see the configuration screen.
 5. Click on the first vill icon. Important to pick the one that has the small number. You should now see the main screen.
 6. When you're ready to start a game, click `Start`
+7. Go train in custom games with friends or against the AI.
   
 
 | Configuration | Main |
