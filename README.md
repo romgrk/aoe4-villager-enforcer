@@ -1,9 +1,16 @@
 # aoe4 villager enforcer
 
-This program plays a loud audio noise when there is no vill in queue.
+This program plays a loud high-pitched tone when there is no vill in queue.
+
+It works by scanning the screen for a villager image at a certain height. Because each civ has a different icon, it needs to be re-configured each time you want to play a new civ.
 
 > [!CAUTION]  
 > This is provided as a **training** software. Using this software in ranked games is **cheating**.
+>
+> The training works only if you put the game volume as low as possible, and the windows volume
+> as loud as possible. If you don't, you'll be training yourself to stop checking for vill
+> production and you'll end up only relying on the tone. If you want to avoid training yourself
+> to be a cheater, it needs to hurt. Put the volume at 100%.
 
 ### Getting started
 
