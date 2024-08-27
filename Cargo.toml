@@ -1,5 +1,5 @@
 [package]
-name = "aoe4-vill-warning"
+name = "aoe4-villager-enforcer"
 version = "0.1.0"
 edition = "2021"
 
