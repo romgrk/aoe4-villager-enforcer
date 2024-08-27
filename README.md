@@ -2,7 +2,7 @@
 
 This program plays a loud audio noise when there is no vill in queue.
 
-:::warn
+:::warning
 I wrote this in a week-end so this is very hacky. Don't expect much.
 :::
 
