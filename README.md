@@ -17,4 +17,4 @@ This program plays a loud audio noise when there is no vill in queue.
 
 | Configuration | Main |
 | --- | --- |
-| <img src="./static/configure.png" /> | ![main screen](./static/main.png) |
+| <img src="./static/configure.png" width="400"/> | <img src="./static/main.png" width="400"/> |
