@@ -16,7 +16,7 @@ It works by scanning the screen for a villager image at a certain height. Becaus
 
 1. Download from: https://github.com/romgrk/aoe4-villager-enforcer/releases
 2. Start AOE4
-3. Start a skirmish game with the civ you want to configure it with, and put a few vills in queue.
+3. Start a skirmish game with the civ you want to configure it with, and put a few vills in queue. Make sure the vill queue icon is on a light background/terrain.
 4. Open the program now. Not before, now. You should see the configuration screen.
 5. Click on the first vill icon. Important to pick the one that has the small number. You should now see the main screen.
 6. When you're ready to start a game, click `Start`
