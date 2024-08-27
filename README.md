@@ -2,7 +2,9 @@
 
 This program plays a loud audio noise when there is no vill in queue.
 
-**NOTE**: I wrote this in a week-end so this is very hacky. Don't expect much.
+:::warn
+I wrote this in a week-end so this is very hacky. Don't expect much.
+:::
 
 ### Getting started
 
@@ -12,3 +14,5 @@ This program plays a loud audio noise when there is no vill in queue.
 4. Open the program now. Not before, now. This is what you should see:
   ![configuration screen](./static/configure.png)
 5. Click on the first vill icon. Important to pick the one that is always visible.
+6. When you're ready to start a game, click `Start`
+  ![main screen](./static/main.png)
