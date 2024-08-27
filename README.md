@@ -2,8 +2,8 @@
 
 This program plays a loud audio noise when there is no vill in queue.
 
-> [!WARNING]  
-> I wrote this in a week-end so this is very hacky. Don't expect much.
+> [!CAUTION]  
+> This is provided as a **training** software. Using this software in ranked games is **cheating**.
 
 ### Getting started
 
@@ -18,3 +18,6 @@ This program plays a loud audio noise when there is no vill in queue.
 | Configuration | Main |
 | --- | --- |
 | <img src="./static/configure.png" width="400"/> | <img src="./static/main.png" width="400"/> |
+
+> [!WARNING]  
+> I wrote this in a week-end so this is very hacky. Don't expect much.
